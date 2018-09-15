@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<eclipse-userlibraries version="2">
+    <library name="SQLDeveloper 18.1" systemlibrary="false">
+        <archive path="C:/sqldeveloperWork/sqldeveloper/ide/extensions/oracle.ide.db.jar"/>
+        <archive path="C:/sqldeveloperWork/sqldeveloper/ide/extensions/oracle.ide.jar"/>
+        <archive path="C:/sqldeveloperWork/sqldeveloper/ide/lib/idert.jar"/>
+        <archive path="C:/sqldeveloperWork/sqldeveloper/ide/lib/javatools.jar"/>
+        <archive path="C:/sqldeveloperWork/sqldeveloper/ide/lib/dbapi.jar"/>
+        <archive path="C:/sqldeveloperWork/sqldeveloper/modules/oracle.javatools/javatools-nodeps.jar"/>
+        <archive path="C:/sqldeveloperWork/sqldeveloper/modules/oracle.javatools/oicons.jar"/>
+        <archive path="C:/sqldeveloperWork/sqldeveloper/sqldeveloper/extensions/oracle.sqldeveloper.jar"/>
+        <archive path="C:/sqldeveloperWork/sqldeveloper/sqldeveloper/extensions/oracle.sqldeveloper.utils.jar"/>
+        <archive path="C:/sqldeveloperWork/sqldeveloper/sqldeveloper/lib/dbtools-common.jar"/>
+        <archive path="C:/sqldeveloperWork/sqldeveloper/sqldeveloper/lib/oracle.sqldeveloper.jfx-nodeps.jar"/>
+    </library>
+</eclipse-userlibraries>

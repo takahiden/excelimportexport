@@ -1,0 +1,40 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.9.6
+Created-By: 1.8.0_101-b13 (Oracle Corporation)
+Bundle-SymbolicName: sqldeveloper.extension.excelimportexport
+Bundle-Version: 18.1.0
+Bundle-ManifestVersion: 2
+Bundle-ClassPath: .,external:$oracle.fcp.home$/sqldeveloper/extensions
+ /sqldeveloper.extension.excelimportexport/lib/commons-codec-1.9.jar,e
+ xternal:$oracle.fcp.home$/sqldeveloper/extensions/sqldeveloper.extens
+ ion.excelimportexport/lib/commons-collections-3.2.1.jar,external:$ora
+ cle.fcp.home$/sqldeveloper/extensions/sqldeveloper.extension.excelimp
+ ortexport/lib/dbunit-2.5.1.jar,external:$oracle.fcp.home$/sqldevelope
+ r/extensions/sqldeveloper.extension.excelimportexport/lib/hamcrest-co
+ re-1.3.jar,external:$oracle.fcp.home$/sqldeveloper/extensions/sqldeve
+ loper.extension.excelimportexport/lib/junit-4.12.jar,external:$oracle
+ .fcp.home$/sqldeveloper/extensions/sqldeveloper.extension.excelimport
+ export/lib/poi-3.11.jar,external:$oracle.fcp.home$/sqldeveloper/exten
+ sions/sqldeveloper.extension.excelimportexport/lib/poi-ooxml-3.11.jar
+ ,external:$oracle.fcp.home$/sqldeveloper/extensions/sqldeveloper.exte
+ nsion.excelimportexport/lib/poi-ooxml-schemas-3.11.jar,external:$orac
+ le.fcp.home$/sqldeveloper/extensions/sqldeveloper.extension.excelimpo
+ rtexport/lib/slf4j-api-1.7.12.jar,external:$oracle.fcp.home$/sqldevel
+ oper/extensions/sqldeveloper.extension.excelimportexport/lib/stax-api
+ -1.0.1.jar,external:$oracle.fcp.home$/sqldeveloper/extensions/sqldeve
+ loper.extension.excelimportexport/lib/xmlbeans-2.6.0.jar,external:$or
+ acle.fcp.home$/sqldeveloper/extensions/sqldeveloper.extension.excelim
+ portexport/lib/fdb-sql-parser-1.4.0.jar
+Require-Bundle: oracle.external.nlsrtl,oracle.external.xmlparser,oracl
+ e.javatools,oracle.javatools-nodeps,oracle.ide,oracle.ide.ceditor,ora
+ cle.ide.status,oracle.ide.audit,oracle.peek,oracle.ide.navigator,orac
+ le.ide.runner,oracle.ide.webbrowser,oracle.ide.externaltools,oracle.i
+ de.inspector,oracle.ide.palette2,oracle.uic,oracle.idert,oracle.javax
+ ide,oracle.icons,oracle.jdeveloper.java.core,oracle.jdeveloper.common
+ ,oracle.layout-managers,oracle.db-api,oracle.db-api-impl,oracle.db-ca
+ ,oracle.jdev-cm,oracle.ide.db,oracle.jdeveloper.db.connection,oracle.
+ ide.db.explorer,oracle.jewt-dbui,oracle.orahelp-helpshare,oracle.orah
+ elp-ohj,oracle.external.oracle-ice,oracle.balipi,oracle.jewt-core,ora
+ cle.external.balishare,oracle.external.jdbc,oracle.sqldeveloper,oracl
+ e.sqldeveloper.utils-nodeps,oracle.sqldeveloper.utils
+
