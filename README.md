@@ -23,6 +23,14 @@ https://github.com/takahiden/excelimportexport/raw/master/update-site/update-cen
 
 
 ## How to use
+Click the right button on editor.
+![usage01 image](images/usage01.png)  
+
+Fig. export dialog.  
+![usage01 image](images/export.png)  
+
+Fig. import dialog.  
+![usage01 image](images/import.png)  
 
 
 ## Use libraries
