@@ -57,3 +57,6 @@ Pease store the following library to lib directory.
 * xmlbeans-2.6.0.jar
   
 Please rewrite SQLDeveloper18.1.userlibraries. And please import to Eclipse.
+
+## Notes
+Please note that i do not take any responsibility or liability for any damage or loss caused through this tool.
