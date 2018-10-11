@@ -40,6 +40,9 @@ public class BinaryStreamDataTypeEx extends BinaryStreamDataType {
 	public Object getSqlValue(int name, ResultSet resultSet) throws SQLException, TypeCastException {
 		Object value = super.getSqlValue(name, resultSet);
 		byte[] valueBytes = (byte[]) value;
+		if(valueBytes==null){
+			valueBytes = new byte[]{};
+		}
 		String destFilePath = resultBLobFilePrefix + String.format("%06d", counter.incrementAndGet()) + ".dat";
 		try (FileOutputStream fileOutStr = new FileOutputStream(destFilePath)) {
 			fileOutStr.write(valueBytes);
