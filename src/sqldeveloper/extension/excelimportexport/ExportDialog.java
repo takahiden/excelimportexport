@@ -8,6 +8,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -248,6 +250,9 @@ public class ExportDialog extends JFrame implements ActionListener {
 			writer.write(partialDataSet, new FileOutputStream(destFilePath));
 		} catch (Exception e) {
 			LogMessage("ERROR", e.getMessage());
+			StringWriter errors = new StringWriter();
+			e.printStackTrace(new PrintWriter(errors));
+			LogMessage("ERROR", errors.toString());
 			JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("ERROR_EXPORT"),
 					ExtensionResources.format("ERROR_TITLE"), JOptionPane.ERROR_MESSAGE);
 			return;

@@ -49,9 +49,9 @@ public class OracleDataTypeFactoryEx extends Oracle10DataTypeFactory {
 		if ("BLOB".equals(sqlTypeName)) {
 			return new BinaryStreamDataTypeEx(sqlTypeName, sqlType, resultBLobFilePrefix, counter);
 		} else if (sqlType == Types.DATE) {
-			return DataType.VARCHAR;
+			return new StringDateType();
 		} else if (sqlType == Types.TIMESTAMP) {
-			return DataType.VARCHAR;
+			return new StringTimestampType();
 		} else {
 			return super.createDataType(sqlType, sqlTypeName);
 		}
