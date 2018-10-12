@@ -250,8 +250,11 @@ public class ImportDialog extends JFrame implements ActionListener {
 		public void itemStateChanged(ItemEvent itemE) {
 			JRadioButton chkSelected = (JRadioButton) itemE.getSource();
 			if (chkSelected != null) {
-				if (ExtensionResources.format("DELETE_BEFORE_IMPORT").equals(chkSelected.getName())) {
+				if (ExtensionResources.format("DELETE_BEFORE_IMPORT").equals(chkSelected.getText())) {
 					deleteBeforeImport = true;
+				}
+				if (ExtensionResources.format("NOT_DELETE_BEFORE_IMPORT").equals(chkSelected.getText())) {
+					deleteBeforeImport = false;
 				}
 			}
 		}
