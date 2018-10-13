@@ -25,6 +25,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
@@ -40,14 +41,13 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
-import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ReplacementDataSet;
-import org.dbunit.dataset.excel.XlsDataSet;
 import org.dbunit.operation.DatabaseOperation;
 
 import oracle.dbtools.raptor.utils.Connections;
@@ -93,12 +93,13 @@ public class ImportDialog extends JFrame implements ActionListener {
 		f.setVisible(true);
 	}
 
+	JButton btnLoad = null;
+
 	/**
 	 * コンストラクタ（部品をセット）
 	 */
 	public ImportDialog() {
-
-		JButton btnLoad = new JButton(ImportDialog.btnLoad_title);
+		btnLoad = new JButton(ImportDialog.btnLoad_title);
 		btnLoad.setMaximumSize(new Dimension(200, 30));
 		btnLoad.addActionListener(this);
 		JPanel pane1 = new JPanel();
@@ -193,45 +194,81 @@ public class ImportDialog extends JFrame implements ActionListener {
 			dispose();
 			return;
 		}
-		IDatabaseConnection con = null;
+		btnLoad.setEnabled(false);
+		thread(deleteBeforeImport, connectionName, inputFilePath, this);
 
-		try {
-			IDataSet dataset = new XlsDataSet(new File(inputFilePath));
-			Connection conn = getConnection(connectionName);
-			con = new DatabaseConnection(conn, conn.getSchema());
-			DatabaseConfig config = con.getConfig();
-			config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new OracleDataTypeFactoryEx(inputFilePath));
-			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-			Date now = new Date();
-			ReplacementDataSet dataSet = new ReplacementDataSet(dataset);
-			dataSet.addReplacementSubstring("SYSDATE", df.format(now));
-			dataSet.addReplacementSubstring("SYSTIMESTAMP", df.format(now));
-			dataSet.addReplacementSubstring("null", "");
-			if (deleteBeforeImport) {
-				DatabaseOperation.CLEAN_INSERT.execute(con, dataset);
-			} else {
-				DatabaseOperation.INSERT.execute(con, dataset);
-			}
-			con.getConnection().commit();
-		} catch (Exception e) {
-			try {
-				con.getConnection().rollback();
-			} catch (Exception e1) {
-				;
-			}
-			LogMessage("ERROR", e.getMessage());
-			StringWriter errors = new StringWriter();
-			e.printStackTrace(new PrintWriter(errors));
-			LogMessage("ERROR", errors.toString());
-			JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("ERROR_IMPORT"),
-					ExtensionResources.format("ERROR_TITLE"), JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-		LogMessage("INFO", " successfully! [" + inputFilePath + "]");
-		LogManager.getLogManager().getMsgPage().log("CALLED " + "\n");
-		JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("SUCCESS_IMPORT"),
-				ExtensionResources.format("SUCCESS_TITLE"), JOptionPane.INFORMATION_MESSAGE);
+	}
 
+	protected void thread(boolean deleteBeforeImport, String connectionName, String inputFilePath,
+			ImportDialog parent) {
+		new SwingWorker<Object, Object>() {
+
+			@Override
+			protected Object doInBackground() throws Exception {
+
+				IDatabaseConnection con = null;
+				XlsProgressDataSet dataset = null;
+				try {
+					dataset = new XlsProgressDataSet(new File(inputFilePath), parent);
+					Connection conn = getConnection(connectionName);
+					con = new DatabaseConnection(conn, conn.getSchema());
+					DatabaseConfig config = con.getConfig();
+					config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY,
+							new OracleDataTypeFactoryEx(inputFilePath));
+					DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+					Date now = new Date();
+					ReplacementDataSet dataSet = new ReplacementDataSet(dataset);
+					dataSet.addReplacementSubstring("SYSDATE", df.format(now));
+					dataSet.addReplacementSubstring("SYSTIMESTAMP", df.format(now));
+					dataSet.addReplacementSubstring("null", "");
+					if (deleteBeforeImport) {
+						DatabaseOperation.CLEAN_INSERT.execute(con, dataset);
+					} else {
+						DatabaseOperation.INSERT.execute(con, dataset);
+					}
+					con.getConnection().commit();
+				} catch (Exception e) {
+					try {
+						con.getConnection().rollback();
+					} catch (Exception e1) {
+						;
+					}
+					if (XlsProgressDataSet.CANCEL_FLG.equals(e.getMessage())) {
+						LogMessage("INFO", " import cancel.");
+						LogManager.getLogManager().getMsgPage().log("CANCELED " + "\n");
+						JOptionPane.showInternalMessageDialog(getContentPane(),
+								ExtensionResources.format("CANCEL_IMPORT"), ExtensionResources.format("CANCEL_TITLE"),
+								JOptionPane.INFORMATION_MESSAGE);
+						return null;
+					}
+					LogMessage("ERROR", e.getMessage());
+					StringWriter errors = new StringWriter();
+					e.printStackTrace(new PrintWriter(errors));
+					LogMessage("ERROR", errors.toString());
+					JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("ERROR_IMPORT"),
+							ExtensionResources.format("ERROR_TITLE"), JOptionPane.ERROR_MESSAGE);
+					return null;
+				} finally {
+					if (dataset != null) {
+						try {
+							dataset.close();
+						} catch (IOException e) {
+							;
+						}
+					}
+				}
+				LogMessage("INFO", " successfully! [" + inputFilePath + "]");
+				LogManager.getLogManager().getMsgPage().log("CALLED " + "\n");
+				JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("SUCCESS_IMPORT"),
+						ExtensionResources.format("SUCCESS_TITLE"), JOptionPane.INFORMATION_MESSAGE);
+				return null;
+			}
+
+			@Override
+			protected void done() {
+				btnLoad.setEnabled(true);
+			}
+		}.execute();
 	}
 
 	public Connection getConnection(String connectionName) throws DBException {

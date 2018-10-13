@@ -8,6 +8,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
@@ -24,6 +25,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.poi.ss.usermodel.Workbook;
@@ -31,13 +33,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
-import org.dbunit.database.QueryDataSet;
 import org.dbunit.dataset.excel.XlsDataSetWriter;
 
 import com.foundationdb.sql.StandardException;
 import com.foundationdb.sql.parser.FromTable;
 import com.foundationdb.sql.parser.SQLParser;
 import com.foundationdb.sql.parser.StatementNode;
+
 /*
 Copyright (c) 2018, Takahiden. All rights reserved. 
 
@@ -95,12 +97,12 @@ public class ExportDialog extends JFrame implements ActionListener {
 
 		f.setVisible(true);
 	}
-
+	JButton btnSave = null;
 	/**
 	 * コンストラクタ（部品をセット）
 	 */
 	public ExportDialog() {
-		JButton btnSave = new JButton(ExportDialog.btnSave_title);
+		btnSave = new JButton(ExportDialog.btnSave_title);
 		btnSave.setPreferredSize(new Dimension(200, 30));
 		btnSave.addActionListener(this);
 		JPanel pane = new JPanel();
@@ -214,7 +216,6 @@ public class ExportDialog extends JFrame implements ActionListener {
 		}
 
 		// xlsx形式で出力できるようにする
-		IDatabaseConnection con = null;
 		XlsDataSetWriter writer = new XlsDataSetWriter() {
 			@Override
 			public Workbook createWorkbook() {
@@ -232,35 +233,73 @@ public class ExportDialog extends JFrame implements ActionListener {
 				tableList.add(tableName);
 			}
 		}
+		btnSave.setEnabled(false);
+		thread(connectionName, destFilePath, queryList, tableList, writer, this);
 
-		try {
-			con = new DatabaseConnection(getConnection(connectionName));
-			DatabaseConfig config = con.getConfig();
-			config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new OracleDataTypeFactoryEx(destFilePath));
-			String[] types = new String[] { "TABLE", "VIEW", "MATERIALIZED VIEW" };
-			config.setProperty(DatabaseConfig.PROPERTY_TABLE_TYPE, types);
-			QueryDataSet partialDataSet = new QueryDataSet(con);
-			for (int i = 0; i < queryList.size(); i++) {
-				String query = queryList.get(i);
+	}
 
-				partialDataSet.addTable(tableList.get(i), query);
-				LogMessage("DEBUG", "query : " + query);
+	protected void thread(String connectionName, String destFilePath, List<String> queryList, List<String> tableList,
+			XlsDataSetWriter writer, ExportDialog parent) {
+		new SwingWorker<Object, Object>() {
+
+			@Override
+			protected Object doInBackground() throws Exception {
+
+				IDatabaseConnection con;
+				QueryDataSetEx partialDataSet = null;
+				try {
+					con = new DatabaseConnection(getConnection(connectionName));
+					DatabaseConfig config = con.getConfig();
+					config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY,
+							new OracleDataTypeFactoryEx(destFilePath));
+					String[] types = new String[] { "TABLE", "VIEW", "MATERIALIZED VIEW" };
+					config.setProperty(DatabaseConfig.PROPERTY_TABLE_TYPE, types);
+					partialDataSet = new QueryDataSetEx(con, parent);
+					for (int i = 0; i < queryList.size(); i++) {
+						String query = queryList.get(i);
+
+						partialDataSet.addTable(tableList.get(i), query);
+						LogMessage("DEBUG", "query : " + query);
+					}
+
+					writer.write(partialDataSet, new FileOutputStream(destFilePath));
+				} catch (Exception e) {
+					if (QueryDataSetEx.CANCEL_FLG.equals(e.getMessage())) {
+						LogMessage("INFO", " export cancel.");
+						LogManager.getLogManager().getMsgPage().log("CANCELED " + "\n");
+						JOptionPane.showInternalMessageDialog(getContentPane(),
+								ExtensionResources.format("CANCEL_EXPORT"), ExtensionResources.format("CANCEL_TITLE"),
+								JOptionPane.INFORMATION_MESSAGE);
+						return null;
+					}
+					LogMessage("ERROR", e.getMessage());
+					StringWriter errors = new StringWriter();
+					e.printStackTrace(new PrintWriter(errors));
+					LogMessage("ERROR", errors.toString());
+					JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("ERROR_EXPORT"),
+							ExtensionResources.format("ERROR_TITLE"), JOptionPane.ERROR_MESSAGE);
+					return null;
+				} finally {
+					if (partialDataSet != null) {
+						try {
+							partialDataSet.close();
+						} catch (IOException e) {
+							;
+						}
+					}
+				}
+				LogMessage("INFO", " successfully! [" + destFilePath + "]");
+				LogManager.getLogManager().getMsgPage().log("CALLED " + "\n");
+				JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("SUCCESS_EXPORT"),
+						ExtensionResources.format("SUCCESS_TITLE"), JOptionPane.INFORMATION_MESSAGE);
+				return null;
 			}
 
-			writer.write(partialDataSet, new FileOutputStream(destFilePath));
-		} catch (Exception e) {
-			LogMessage("ERROR", e.getMessage());
-			StringWriter errors = new StringWriter();
-			e.printStackTrace(new PrintWriter(errors));
-			LogMessage("ERROR", errors.toString());
-			JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("ERROR_EXPORT"),
-					ExtensionResources.format("ERROR_TITLE"), JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-		LogMessage("INFO", " successfully! [" + destFilePath + "]");
-		LogManager.getLogManager().getMsgPage().log("CALLED " + "\n");
-		JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("SUCCESS_EXPORT"),
-				ExtensionResources.format("SUCCESS_TITLE"), JOptionPane.INFORMATION_MESSAGE);
+			@Override
+			protected void done() {
+				btnSave.setEnabled(true);
+			}
+		}.execute();
 	}
 
 	public Connection getConnection(String connectionName) throws DBException {
