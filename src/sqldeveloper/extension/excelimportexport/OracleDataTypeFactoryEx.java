@@ -52,6 +52,8 @@ public class OracleDataTypeFactoryEx extends Oracle10DataTypeFactory {
 			return new StringDateType();
 		} else if (sqlType == Types.TIMESTAMP) {
 			return new StringTimestampType();
+		} else if ("NUMBER".equals(sqlTypeName)) {
+			return DataType.VARCHAR;
 		} else {
 			return super.createDataType(sqlType, sqlTypeName);
 		}
