@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2018, Takahiden. All rights reserved. 
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+*/
 package sqldeveloper.extension.excelimportexport;
 
 import java.awt.Dimension;
@@ -19,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -69,6 +85,7 @@ public class ExportDialog extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	JTextArea tf01 = new JTextArea("");
 
+	JCheckBox logOutCheck = null;
 	String connectionName = null;
 
 	/**
@@ -97,7 +114,9 @@ public class ExportDialog extends JFrame implements ActionListener {
 
 		f.setVisible(true);
 	}
+
 	JButton btnSave = null;
+
 	/**
 	 * コンストラクタ（部品をセット）
 	 */
@@ -106,11 +125,12 @@ public class ExportDialog extends JFrame implements ActionListener {
 		btnSave.setPreferredSize(new Dimension(200, 30));
 		btnSave.addActionListener(this);
 		JPanel pane = new JPanel();
-		pane.setLayout(new FlowLayout());
-		// tf01.setPreferredSize(new Dimension(900, 350));
+		pane.setLayout(new FlowLayout(FlowLayout.CENTER, 1000, 10));
 		JScrollPane scrollpane = new JScrollPane(tf01);
 		scrollpane.setPreferredSize(new Dimension(910, 300));
 		pane.add(scrollpane);
+		logOutCheck = new JCheckBox(ExtensionResources.format("LOG_OUTPUT"));
+		pane.add(logOutCheck);
 		pane.add(btnSave);
 		getContentPane().add(pane);
 		this.addWindowListener(new WinAdapter());
@@ -247,6 +267,7 @@ public class ExportDialog extends JFrame implements ActionListener {
 
 				IDatabaseConnection con;
 				QueryDataSetEx partialDataSet = null;
+				List<LogBean> logList = new ArrayList<LogBean>();
 				try {
 					con = new DatabaseConnection(getConnection(connectionName));
 					DatabaseConfig config = con.getConfig();
@@ -254,7 +275,7 @@ public class ExportDialog extends JFrame implements ActionListener {
 							new OracleDataTypeFactoryEx(destFilePath));
 					String[] types = new String[] { "TABLE", "VIEW", "MATERIALIZED VIEW" };
 					config.setProperty(DatabaseConfig.PROPERTY_TABLE_TYPE, types);
-					partialDataSet = new QueryDataSetEx(con, parent);
+					partialDataSet = new QueryDataSetEx(con, parent, logList);
 					for (int i = 0; i < queryList.size(); i++) {
 						String query = queryList.get(i);
 
@@ -287,6 +308,11 @@ public class ExportDialog extends JFrame implements ActionListener {
 							;
 						}
 					}
+				}
+
+				if (logOutCheck.isSelected()) {
+					// log
+					LogSheetUtil.outputLog(destFilePath, logList);
 				}
 				LogMessage("INFO", " successfully! [" + destFilePath + "]");
 				LogManager.getLogManager().getMsgPage().log("CALLED " + "\n");

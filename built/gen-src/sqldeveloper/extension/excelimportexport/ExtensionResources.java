@@ -30,6 +30,7 @@ public class ExtensionResources extends MessagesBase {
     public static final String ERROR_EXPORT = "ERROR_EXPORT"; //$NON-NLS-1$
     public static final String IMPORT_TITLE = "IMPORT_TITLE"; //$NON-NLS-1$
     public static final String CONFIRM_TITLE = "CONFIRM_TITLE"; //$NON-NLS-1$
+    public static final String CANCEL_EXPORT = "CANCEL_EXPORT"; //$NON-NLS-1$
     public static final String ACTION_IMPORT_LABEL = "ACTION_IMPORT_LABEL"; //$NON-NLS-1$
     public static final String FILE_NOT_EXISTS_TITLE = "FILE_NOT_EXISTS_TITLE"; //$NON-NLS-1$
     public static final String DELETE_BEFORE_IMPORT = "DELETE_BEFORE_IMPORT"; //$NON-NLS-1$
@@ -39,8 +40,11 @@ public class ExtensionResources extends MessagesBase {
     public static final String SUCCESS_IMPORT = "SUCCESS_IMPORT"; //$NON-NLS-1$
     public static final String FILE_ALREADY_EXISTS = "FILE_ALREADY_EXISTS"; //$NON-NLS-1$
     public static final String FILE_FORMAT_NAME = "FILE_FORMAT_NAME"; //$NON-NLS-1$
+    public static final String LOG_OUTPUT = "LOG_OUTPUT"; //$NON-NLS-1$
     public static final String ERROR_TITLE = "ERROR_TITLE"; //$NON-NLS-1$
     public static final String ERROR_IMPORT = "ERROR_IMPORT"; //$NON-NLS-1$
+    public static final String CANCEL_TITLE = "CANCEL_TITLE"; //$NON-NLS-1$
+    public static final String CANCEL_IMPORT = "CANCEL_IMPORT"; //$NON-NLS-1$
     public static final String SUCCESS_EXPORT = "SUCCESS_EXPORT"; //$NON-NLS-1$
     public static final String ERROR_EXPORT_NO_QUERY = "ERROR_EXPORT_NO_QUERY"; //$NON-NLS-1$
 

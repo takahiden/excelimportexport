@@ -31,11 +31,14 @@ import java.io.StringWriter;
 import java.sql.Connection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -64,7 +67,7 @@ public class ImportDialog extends JFrame implements ActionListener {
 	private static final int window_width = 600;
 
 	ButtonGroup chkGroup;
-
+	JCheckBox logOutCheck = null;
 	String connectionName = null;
 	String schemaName = null;
 	boolean deleteBeforeImport = false;
@@ -117,12 +120,17 @@ public class ImportDialog extends JFrame implements ActionListener {
 		pane1.add(chk2);
 		JPanel pane2 = new JPanel();
 		pane2.setLayout(new BoxLayout(pane2, BoxLayout.Y_AXIS));
-
-		pane2.add(btnLoad);
-		GridLayout grid = new GridLayout(2, 1);
+		logOutCheck = new JCheckBox(ExtensionResources.format("LOG_OUTPUT"));
+		pane2.add(logOutCheck);
+		JPanel pane3 = new JPanel();
+		pane3.setLayout(new BoxLayout(pane3, BoxLayout.Y_AXIS));
+		pane3.add(btnLoad);
+		GridLayout grid = new GridLayout(3, 1);
 		getContentPane().setLayout(grid);
 		getContentPane().add(pane1);
 		getContentPane().add(pane2);
+		getContentPane().add(pane3);
+		logOutCheck.setAlignmentX(0.5f);
 		btnLoad.setAlignmentX(0.5f);
 		this.addWindowListener(new WinAdapter());
 	}
@@ -208,8 +216,9 @@ public class ImportDialog extends JFrame implements ActionListener {
 
 				IDatabaseConnection con = null;
 				XlsProgressDataSet dataset = null;
+				List<LogBean> logList = new ArrayList<LogBean>();
 				try {
-					dataset = new XlsProgressDataSet(new File(inputFilePath), parent);
+					dataset = new XlsProgressDataSet(new File(inputFilePath), parent, logList);
 					Connection conn = getConnection(connectionName);
 					con = new DatabaseConnection(conn, conn.getSchema());
 					DatabaseConfig config = con.getConfig();
@@ -221,6 +230,7 @@ public class ImportDialog extends JFrame implements ActionListener {
 					dataSet.addReplacementSubstring("SYSDATE", df.format(now));
 					dataSet.addReplacementSubstring("SYSTIMESTAMP", df.format(now));
 					dataSet.addReplacementSubstring("null", "");
+					dataSet.addReplacementSubstring("(null)", "");
 					if (deleteBeforeImport) {
 						DatabaseOperation.CLEAN_INSERT.execute(con, dataset);
 					} else {
@@ -256,6 +266,11 @@ public class ImportDialog extends JFrame implements ActionListener {
 							;
 						}
 					}
+				}
+
+				if (logOutCheck.isSelected()) {
+					// log
+					LogSheetUtil.outputLog(inputFilePath, logList);
 				}
 				LogMessage("INFO", " successfully! [" + inputFilePath + "]");
 				LogManager.getLogManager().getMsgPage().log("CALLED " + "\n");

@@ -3,6 +3,7 @@ package sqldeveloper.extension.excelimportexport;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.ProgressMonitor;
@@ -19,9 +20,12 @@ public class QueryDataSetEx extends QueryDataSet implements Closeable {
 
 	private ExportDialog owner = null;
 
-	public QueryDataSetEx(IDatabaseConnection connection, ExportDialog owner) {
+	private List<LogBean> logList = null;
+
+	public QueryDataSetEx(IDatabaseConnection connection, ExportDialog owner, List<LogBean> logList) {
 		super(connection);
 		this.owner = owner;
+		this.logList = logList;
 	}
 
 	private List<String> tableNames = new ArrayList<String>();
@@ -29,6 +33,10 @@ public class QueryDataSetEx extends QueryDataSet implements Closeable {
 	@Override
 	public void addTable(String tableName, String query) throws AmbiguousTableNameException {
 		tableNames.add(tableName);
+		LogBean logBean = new LogBean();
+		logBean.setTableName(tableName);
+		logBean.setSql(query);
+		this.logList.add(logBean);
 		super.addTable(tableName, query);
 	}
 
@@ -54,10 +62,16 @@ public class QueryDataSetEx extends QueryDataSet implements Closeable {
 	private int called = 0;
 	private ITable itable = null;
 
+	private int tableIndex = 0;
+	private LogBean logBean = null;
+
 	class ITableIteratorWrapper implements ITableIterator {
 
 		@Override
 		public boolean next() throws DataSetException {
+			if (logBean != null) {
+				logBean.setResult("success");
+			}
 			return iterator.next();
 		}
 
@@ -73,6 +87,8 @@ public class QueryDataSetEx extends QueryDataSet implements Closeable {
 			if (tableNames.size() > 1) {
 				pm.setProgress(called++);
 			}
+			logBean = logList.get(tableIndex++);
+			logBean.setTime(new Date());
 			return new ITableWrapper();
 		}
 	}
@@ -115,4 +131,11 @@ public class QueryDataSetEx extends QueryDataSet implements Closeable {
 
 	}
 
+	public List<LogBean> getLogList() {
+		return logList;
+	}
+
+	public void setLogList(List<LogBean> logList) {
+		this.logList = logList;
+	}
 }

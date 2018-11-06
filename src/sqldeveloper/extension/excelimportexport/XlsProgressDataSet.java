@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2018, Takahiden. All rights reserved. 
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. 
+*/
 package sqldeveloper.extension.excelimportexport;
 
 import java.io.Closeable;
@@ -5,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.ProgressMonitor;
@@ -24,10 +40,14 @@ public class XlsProgressDataSet extends XlsDataSet implements Closeable {
 
 	private List<String> tableNames = new ArrayList<String>();
 	private int totalRecCount = 0;
+	private List<LogBean> logList = null;
 
-	public XlsProgressDataSet(File file, ImportDialog owner) throws IOException, DataSetException {
+	public XlsProgressDataSet(File file, ImportDialog owner, List<LogBean> logList)
+			throws IOException, DataSetException {
 		super(file);
 		this.owner = owner;
+		this.logList = logList;
+
 		Workbook workbook;
 		try {
 			workbook = WorkbookFactory.create(new FileInputStream(file));
@@ -36,9 +56,17 @@ public class XlsProgressDataSet extends XlsDataSet implements Closeable {
 		}
 		int sheetCount = workbook.getNumberOfSheets();
 		for (int i = 0; i < sheetCount; i++) {
-			tableNames.add(workbook.getSheetName(i));
-			totalRecCount += workbook.getSheetAt(i).getLastRowNum();
+			String tableName = workbook.getSheetName(i);
+			if (!"(LOG)".equals(tableName)) {
+				tableNames.add(tableName);
+				LogBean logBean = new LogBean();
+				logBean.setTableName(tableName);
+				logBean.setSql("INSERT...");
+				this.logList.add(logBean);
+				totalRecCount += workbook.getSheetAt(i).getLastRowNum();
+			}
 		}
+
 	}
 
 	protected ITableIterator iterator = null;
@@ -63,11 +91,23 @@ public class XlsProgressDataSet extends XlsDataSet implements Closeable {
 	private int called = 0;
 	private ITable itable = null;
 
+	private int tableIndex = 0;
+	private LogBean logBean = null;
+
 	class ITableIteratorWrapper implements ITableIterator {
 
 		@Override
 		public boolean next() throws DataSetException {
-			return iterator.next();
+			if (logBean != null) {
+				logBean.setResult("success");
+			}
+			boolean next = iterator.next();
+			if (next) {
+				if ("(LOG)".equals(iterator.getTable().getTableMetaData().getTableName())) {
+					next = iterator.next();
+				}
+			}
+			return next;
 		}
 
 		@Override
@@ -80,6 +120,8 @@ public class XlsProgressDataSet extends XlsDataSet implements Closeable {
 			itable = iterator.getTable();
 			pm.setNote(itable.getTableMetaData().getTableName());
 			rowCount = itable.getRowCount();
+			logBean = logList.get(tableIndex++);
+			logBean.setTime(new Date());
 			return new ITableWrapper();
 		}
 	}
