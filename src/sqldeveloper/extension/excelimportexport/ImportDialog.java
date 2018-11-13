@@ -231,6 +231,7 @@ public class ImportDialog extends JFrame implements ActionListener {
 					dataSet.addReplacementSubstring("SYSTIMESTAMP", df.format(now));
 					dataSet.addReplacementSubstring("null", "");
 					dataSet.addReplacementSubstring("(null)", "");
+					dataSet.addReplacementSubstring("(NULL)", "");
 					if (deleteBeforeImport) {
 						DatabaseOperation.CLEAN_INSERT.execute(con, dataset);
 					} else {

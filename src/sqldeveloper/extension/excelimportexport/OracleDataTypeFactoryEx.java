@@ -34,14 +34,23 @@ public class OracleDataTypeFactoryEx extends Oracle10DataTypeFactory {
 		this.resultFile = resultFile;
 		this.counter = new AtomicInteger(0);
 
-		String abstPath = new File(this.resultFile).getAbsolutePath();
-		int point = abstPath.lastIndexOf(".");
-		if (point != -1) {
-			resultBLobFilePrefix = abstPath.substring(0, point) + "_BLOB_";
-		} else {
-			resultBLobFilePrefix = abstPath + "_BLOB_";
-		}
+		File file = new File(this.resultFile);
 
+		File dir = file.getParentFile();
+		String fileName = getNameWithoutExtension(file);
+		File blobDir = new File(dir, fileName + "_BLOB");
+		blobDir.mkdirs();
+
+		resultBLobFilePrefix = new File(blobDir, fileName + "_BLOB_").getAbsolutePath();
+	}
+
+	public String getNameWithoutExtension(File file) {
+		String fileName = file.getName();
+		int index = fileName.lastIndexOf('.');
+		if (index != -1) {
+			return fileName.substring(0, index);
+		}
+		return fileName;
 	}
 
 	@Override

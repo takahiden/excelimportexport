@@ -118,7 +118,7 @@ public class ExportDialog extends JFrame implements ActionListener {
 	JButton btnSave = null;
 
 	/**
-	 * コンストラクタ（部品をセット）
+	 * コンストラクタ
 	 */
 	public ExportDialog() {
 		btnSave = new JButton(ExportDialog.btnSave_title);
