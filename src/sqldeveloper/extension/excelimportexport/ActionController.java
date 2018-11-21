@@ -60,8 +60,18 @@ public class ActionController implements Controller {
 
 	private void doExportAction(Context context) {
 		DBObject dbObject = new DBObject(context.getNode());
-		// String objectType = dbObject.getObjectType();
-		View view = context.getView();
+
+		String connectionName = (String) context.getProperty("Connections.db_name");
+		if (connectionName == null) {
+			connectionName = dbObject.getConnectionName();
+		}
+		// 接続していない場合は、アラートを出して終了
+		if (connectionName == null) {
+			JOptionPane.showInternalMessageDialog(Ide.getMainWindow().getContentPane(),
+					ExtensionResources.format("ERROR_NOT_CONNECT"), ExtensionResources.format("ERROR_TITLE"),
+					JOptionPane.WARNING_MESSAGE);
+			return;
+		}
 
 		StringBuilder strQuery = new StringBuilder("");
 		List<String> sequenceNames = new ArrayList<String>();
@@ -70,7 +80,9 @@ public class ActionController implements Controller {
 			if (el instanceof ObjectNode) {
 				ObjectNode objectEl = (ObjectNode) el;
 				if ("TABLE".equals(objectEl.getObjectType())) {
-					strQuery.append("SELECT * FROM " + objectEl.getObjectName() + ";" + System.lineSeparator());
+					strQuery.append("SELECT * FROM " + objectEl.getObjectName()
+							+ PKListUtil.getPKColumnOrderBy(connectionName, objectEl.getObjectName()) + ";"
+							+ System.lineSeparator());
 				} else if ("VIEW".equals(objectEl.getObjectType())) {
 					strQuery.append("SELECT * FROM " + objectEl.getObjectName() + ";" + System.lineSeparator());
 				} else if ("SEQUENCE".equals(objectEl.getObjectType())) {
@@ -84,22 +96,13 @@ public class ActionController implements Controller {
 					+ ");" + System.lineSeparator());
 		}
 		try {
+			View view = context.getView();
 			BasicEditorPane editor = ((BasicEditorPaneContainer) view).getFocusedEditorPane();
-			strQuery.append(editor.getSelectedText()==null ? "" : editor.getSelectedText());
+			strQuery.append(editor.getSelectedText() == null ? "" : editor.getSelectedText());
 		} catch (Exception e) {
 			;
 		}
-		String connectionName = (String) context.getProperty("Connections.db_name");
-		if (connectionName == null) {
-			connectionName = dbObject.getConnectionName();
-		}
-		// 接続していない場合は、アラートを出して終了
-		if (connectionName == null) {
-			JOptionPane.showInternalMessageDialog(Ide.getMainWindow().getContentPane(),
-					ExtensionResources.format("ERROR_NOT_CONNECT"), ExtensionResources.format("ERROR_TITLE"),
-					JOptionPane.WARNING_MESSAGE);
-			return;
-		}
+
 		ExportDialog.createSaveFrame(strQuery.toString(), connectionName);
 
 	}

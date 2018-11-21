@@ -314,6 +314,9 @@ public class ExportDialog extends JFrame implements ActionListener {
 					// log
 					LogSheetUtil.outputLog(destFilePath, logList);
 				}
+
+				FixStyleUtil.fixStyle(destFilePath);
+
 				LogMessage("INFO", " successfully! [" + destFilePath + "]");
 				LogManager.getLogManager().getMsgPage().log("CALLED " + "\n");
 				JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("SUCCESS_EXPORT"),
