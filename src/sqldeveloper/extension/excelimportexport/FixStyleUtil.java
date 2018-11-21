@@ -25,6 +25,7 @@ import java.util.Date;
 import org.apache.poi.POIXMLProperties;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.util.IOUtils;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -57,9 +58,16 @@ public class FixStyleUtil {
 			coreProps.setCreator(username);
 
 			CellStyle headerStyle = book.createCellStyle();
-			headerStyle.setBorderBottom(CellStyle.BORDER_DOUBLE);
 			XSSFFont headerFont = book.createFont();
+			headerFont.setFontName("Serif");
 			headerFont.setBold(true);
+			headerStyle.setFont(headerFont);
+			headerStyle.setBorderBottom(CellStyle.BORDER_DOUBLE);
+			
+			CellStyle bodyStyle = book.createCellStyle();
+			XSSFFont bodyFont = book.createFont();
+			bodyFont.setFontName("Serif");
+			bodyStyle.setFont(bodyFont);
 
 			for (int i = 0; i < book.getNumberOfSheets(); i++) {
 				XSSFSheet sheet = book.getSheetAt(i);
@@ -67,15 +75,29 @@ public class FixStyleUtil {
 					continue;
 				}
 				int lastCell = sheet.getRow(0).getLastCellNum();
+				// header style
 				for (int col = 0; col < lastCell; col++) {
-					if (col == 0) {
-						XSSFFont firstRowFont = sheet.getRow(0).getCell(col).getCellStyle().getFont();
-//						headerFont.setFontName("Meiryo UI");
-						headerFont.setFontHeightInPoints(firstRowFont.getFontHeightInPoints());
-						headerStyle.setFont(headerFont);
+					XSSFCell cell = sheet.getRow(0).getCell(col);
+					if (cell == null) {
+						cell = sheet.getRow(0).createCell(col);
 					}
-					sheet.autoSizeColumn(col);
-					sheet.getRow(0).getCell(col).setCellStyle(headerStyle);
+					cell.setCellStyle(headerStyle);
+				}
+				int lastRowNum = sheet.getLastRowNum();
+				if (lastRowNum > 1) {
+					for (int row = 1; row < lastRowNum; row++) {
+						for (int col = 0; col < lastCell; col++) {
+							XSSFCell cell = sheet.getRow(row).getCell(col);
+							if (cell == null) {
+								cell = sheet.getRow(row).createCell(col);
+							}
+							cell.setCellStyle(bodyStyle);
+						}
+					}
+				}
+				// auto size column
+				for (int col = 0; col < lastCell; col++) {
+					sheet.autoSizeColumn(col, true);
 				}
 			}
 
