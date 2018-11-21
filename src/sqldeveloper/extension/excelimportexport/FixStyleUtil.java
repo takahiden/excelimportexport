@@ -70,7 +70,7 @@ public class FixStyleUtil {
 				for (int col = 0; col < lastCell; col++) {
 					if (col == 0) {
 						XSSFFont firstRowFont = sheet.getRow(0).getCell(col).getCellStyle().getFont();
-						headerFont.setFontName("Meiryo UI");
+//						headerFont.setFontName("Meiryo UI");
 						headerFont.setFontHeightInPoints(firstRowFont.getFontHeightInPoints());
 						headerStyle.setFont(headerFont);
 					}
