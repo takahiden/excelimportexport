@@ -35,7 +35,7 @@ import oracle.ide.log.LogManager;
 public class FixStyleUtil {
 
 	public static void main(String[] args) {
-		fixStyle("C:/sqldeveloperWork/cccc.xlsx");
+		fixStyle("C:/sqldeveloperWork/dddd.xlsx");
 
 	}
 
@@ -85,7 +85,7 @@ public class FixStyleUtil {
 				}
 				int lastRowNum = sheet.getLastRowNum();
 				if (lastRowNum > 1) {
-					for (int row = 1; row < lastRowNum; row++) {
+					for (int row = 1; row <= lastRowNum; row++) {
 						for (int col = 0; col < lastCell; col++) {
 							XSSFCell cell = sheet.getRow(row).getCell(col);
 							if (cell == null) {
