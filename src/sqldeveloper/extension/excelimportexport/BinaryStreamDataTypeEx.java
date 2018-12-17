@@ -15,6 +15,7 @@ limitations under the License.
 */
 package sqldeveloper.extension.excelimportexport;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.PreparedStatement;
@@ -29,19 +30,25 @@ public class BinaryStreamDataTypeEx extends BinaryStreamDataType {
 
 	public String resultBLobFilePrefix;
 	public AtomicInteger counter;
+	public File blobDir;
 
-	public BinaryStreamDataTypeEx(String name, int sqlType, String resultBLobFilePrefix, AtomicInteger counter) {
+	public BinaryStreamDataTypeEx(String name, int sqlType, File blobDir, String resultBLobFilePrefix,
+			AtomicInteger counter) {
 		super(name, sqlType);
 		this.resultBLobFilePrefix = resultBLobFilePrefix;
 		this.counter = counter;
+		this.blobDir = blobDir;
 	}
 
 	@Override
 	public Object getSqlValue(int name, ResultSet resultSet) throws SQLException, TypeCastException {
 		Object value = super.getSqlValue(name, resultSet);
 		byte[] valueBytes = (byte[]) value;
-		if(valueBytes==null){
-			valueBytes = new byte[]{};
+		if (valueBytes == null) {
+			valueBytes = new byte[] {};
+		}
+		if (!blobDir.exists()) {
+			blobDir.mkdirs();
 		}
 		String destFilePath = resultBLobFilePrefix + String.format("%06d", counter.incrementAndGet()) + ".dat";
 		try (FileOutputStream fileOutStr = new FileOutputStream(destFilePath)) {

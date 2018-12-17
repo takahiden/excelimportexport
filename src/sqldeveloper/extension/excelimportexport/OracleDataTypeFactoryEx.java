@@ -29,6 +29,8 @@ public class OracleDataTypeFactoryEx extends Oracle10DataTypeFactory {
 	public String resultFile;
 
 	public String resultBLobFilePrefix;
+	
+	public File blobDir;
 
 	public OracleDataTypeFactoryEx(String resultFile) {
 		this.resultFile = resultFile;
@@ -38,8 +40,7 @@ public class OracleDataTypeFactoryEx extends Oracle10DataTypeFactory {
 
 		File dir = file.getParentFile();
 		String fileName = getNameWithoutExtension(file);
-		File blobDir = new File(dir, fileName + "_BLOB");
-		blobDir.mkdirs();
+		blobDir = new File(dir, fileName + "_BLOB");
 
 		resultBLobFilePrefix = new File(blobDir, fileName + "_BLOB_").getAbsolutePath();
 	}
@@ -56,7 +57,7 @@ public class OracleDataTypeFactoryEx extends Oracle10DataTypeFactory {
 	@Override
 	public DataType createDataType(int sqlType, String sqlTypeName) throws DataTypeException {
 		if ("BLOB".equals(sqlTypeName)) {
-			return new BinaryStreamDataTypeEx(sqlTypeName, sqlType, resultBLobFilePrefix, counter);
+			return new BinaryStreamDataTypeEx(sqlTypeName, sqlType, blobDir, resultBLobFilePrefix, counter);
 		} else if (sqlType == Types.DATE) {
 			return new StringDateType();
 		} else if (sqlType == Types.TIMESTAMP) {

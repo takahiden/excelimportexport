@@ -9,7 +9,7 @@
 	language governing permissions and limitations under the License. -->
 
 <extension xmlns="http://jcp.org/jsr/198/extension-manifest"
-	id="sqldeveloper.extension.excelimportexport" version="18.1.0.18.352.0226"
+	id="sqldeveloper.extension.excelimportexport" version="18.1.0.18.352.0258"
 	esdk-version="1.0" rsbundle-class="sqldeveloper.extension.excelimportexport.ExtensionResources">
 
 	<name>Excel Import Export Tool</name>
