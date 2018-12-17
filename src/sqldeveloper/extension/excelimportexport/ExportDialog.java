@@ -361,6 +361,9 @@ public class ExportDialog extends JFrame implements ActionListener {
 			} catch (StandardException e) {
 				return null;
 			}
+			if (tableName != null) {
+				tableName = tableName.toUpperCase();
+			}
 			return tableName;
 		}
 		return null;
