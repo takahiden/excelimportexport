@@ -71,7 +71,7 @@ public class FixStyleUtil {
 
 			for (int i = 0; i < book.getNumberOfSheets(); i++) {
 				XSSFSheet sheet = book.getSheetAt(i);
-				if ("(LOG)".equals(sheet.getSheetName())) {
+				if ("(LOG)".equals(sheet.getSheetName()) || sheet.getSheetName().startsWith("(SQL")) {
 					continue;
 				}
 				int lastCell = sheet.getRow(0).getLastCellNum();

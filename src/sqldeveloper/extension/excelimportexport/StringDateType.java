@@ -34,12 +34,14 @@ public class StringDateType extends StringDataType {
 		super("VARCHAR", 12);
 	}
 
-	public static SimpleDateFormat formatNormal = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	public static SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
-	public static SimpleDateFormat format3 = new SimpleDateFormat("yyyy/MM/dd");
+	public static SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+	public static SimpleDateFormat format2 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
+	public static SimpleDateFormat format3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	public static SimpleDateFormat format4 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-	public static SimpleDateFormat format5 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-	public static SimpleDateFormat format6 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
+	public static SimpleDateFormat format5 = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+	public static SimpleDateFormat format6 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	public static SimpleDateFormat format7 = new SimpleDateFormat("yyyy-MM-dd");
+	public static SimpleDateFormat format8 = new SimpleDateFormat("yyyy/MM/dd");
 
 	@Override
 	public Object getSqlValue(int column, ResultSet resultSet) throws SQLException, TypeCastException {
@@ -49,7 +51,7 @@ public class StringDateType extends StringDataType {
 			return null;
 		}
 
-		return formatNormal.format(value);
+		return format3.format(value);
 	}
 
 	@Override
@@ -63,7 +65,7 @@ public class StringDateType extends StringDataType {
 
 		if ((value instanceof String)) {
 			try {
-				statement.setDate(column, new Date(formatNormal.parse((String) value).getTime()));
+				statement.setDate(column, new Date(format1.parse((String) value).getTime()));
 				return;
 			} catch (ParseException e) {
 			}
@@ -92,6 +94,16 @@ public class StringDateType extends StringDataType {
 				return;
 			} catch (ParseException e) {
 			}
+			try {
+				statement.setDate(column, new Date(format7.parse((String) value).getTime()));
+				return;
+			} catch (ParseException e) {
+			}
+			try {
+				statement.setDate(column, new Date(format8.parse((String) value).getTime()));
+				return;
+			} catch (ParseException e) {
+			}
 			throw new TypeCastException(value, this);
 		}
 
@@ -107,6 +119,12 @@ public class StringDateType extends StringDataType {
 			statement.setTimestamp(column, (Timestamp) value);
 			return;
 		}
+		if ((value instanceof Long)) {
+			Date dateValue = new Date(((Long) value).longValue());
+			statement.setDate(column, dateValue);
+			return;
+		}
+
 		statement.setString(column, asString(value));
 	}
 

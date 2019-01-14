@@ -23,8 +23,10 @@ https://github.com/takahiden/excelimportexport/raw/master/update-site/update-cen
 
 
 ## How to use
-Click the right button on editor.
+Click the right button on editor. Or click the right button on tables.
 ![usage01 image](images/usage01.png)  
+
+![usage01 image](images/usage02.png)  
 
 Fig. export dialog.  
 ![usage01 image](images/export.png)  
@@ -32,6 +34,16 @@ Fig. export dialog.
 Fig. import dialog.  
 ![usage01 image](images/import.png)  
 
+Fig. import excel sample.  
+![usage01 image](images/importSample01.png)  
+![usage01 image](images/importSample02.png)  
+
+Sheet name・・・import table name  
+Column name・・・import table column name  
+
+Columns of Date type and Timestamp type can be specified in a format such as YYYY-MM-DD. You can also use SYSDATE and SYSTIMESTAMP.  
+You can register files you want to store in BLOB by setting an absolute path.
+If "(SQL" is attached to the sheet name, execute the SQL statement of the sheet.  
 
 ## Use libraries
 It uses the following libraries.

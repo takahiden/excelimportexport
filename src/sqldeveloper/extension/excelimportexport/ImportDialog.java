@@ -218,12 +218,14 @@ public class ImportDialog extends JFrame implements ActionListener {
 				XlsProgressDataSet dataset = null;
 				List<LogBean> logList = new ArrayList<LogBean>();
 				try {
-					dataset = new XlsProgressDataSet(new File(inputFilePath), parent, logList);
+					dataset = new XlsProgressDataSet(new File(inputFilePath), parent, logList, deleteBeforeImport);
 					Connection conn = getConnection(connectionName);
 					con = new DatabaseConnection(conn, conn.getSchema());
 					DatabaseConfig config = con.getConfig();
 					config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY,
 							new OracleDataTypeFactoryEx(inputFilePath));
+					config.setProperty("http://www.dbunit.org/properties/statementFactory",
+							new PreparedStatementFactoryEx());
 					DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 					Date now = new Date();
 					ReplacementDataSet dataSet = new ReplacementDataSet(dataset);
@@ -233,9 +235,9 @@ public class ImportDialog extends JFrame implements ActionListener {
 					dataSet.addReplacementSubstring("(null)", "");
 					dataSet.addReplacementSubstring("(NULL)", "");
 					if (deleteBeforeImport) {
-						DatabaseOperation.CLEAN_INSERT.execute(con, dataset);
+						DatabaseOperation.CLEAN_INSERT.execute(con, dataSet);
 					} else {
-						DatabaseOperation.INSERT.execute(con, dataset);
+						DatabaseOperation.INSERT.execute(con, dataSet);
 					}
 					con.getConnection().commit();
 				} catch (Exception e) {
