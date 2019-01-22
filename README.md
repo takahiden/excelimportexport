@@ -48,25 +48,37 @@ If "(SQL" is attached to the sheet name, execute the SQL statement of the sheet.
 ## Use libraries
 It uses the following libraries.
 
-* DBUnit 2.5.1
-* Apache POI 3.11
-* FoundationDB SQL Parser 1.5.0
+* DBUnit 2.6.0
+* Apache POI 4.0
+* FoundationDB SQL Parser 1.4.0
+* excel-streaming-reader 2.1.0
 
 ## When compiling
 Pease store the following library to lib directory.
 
-* commons-codec-1.9.jar
-* commons-collections-3.2.1.jar
-* dbunit-2.5.1.jar
+* commons-codec-1.10.jar
+* commons-collections-3.2.2.jar
+* commons-collections4-4.2.jar
+* commons-compress-1.18.jar
+* curvesapi-1.04.jar
+* dbunit-2.6.0.jar
 * fdb-sql-parser-1.4.0.jar
 * hamcrest-core-1.3.jar
 * junit-4.12.jar
-* poi-3.11.jar
-* poi-ooxml-3.11.jar
-* poi-ooxml-schemas-3.11.jar  
-* slf4j-api-1.7.12.jar
-* stax-api-1.0.1.jar
-* xmlbeans-2.6.0.jar
+* poi-4.0.0.jar
+* poi-ooxml-4.0.0.jar
+* poi-ooxml-schemas-4.0.0.jar
+* postgresql-8.4-701.jdbc3.jar
+* slf4j-api-1.7.25.jar
+* xmlbeans-3.0.1.jar
+* xercesImpl-2.12.0.jar
+* xml-apis-1.4.01.jar
+* icu4j-4.6.jar
+* java-cup-10k.jar
+* org.eclipse.wst.xml.xpath2.processor-2.1.100.jar
+* xerces2-xsd11-2.11.1.jar
+* xlsx-streamer-2.1.0.jar
+* xml-resolver-1.2.jar
   
 Please rewrite SQLDeveloper18.1.userlibraries. And please import to Eclipse.
 

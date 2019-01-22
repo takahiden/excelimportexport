@@ -17,33 +17,30 @@ package sqldeveloper.extension.excelimportexport;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.swing.ProgressMonitor;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.dbunit.dataset.Column;
 import org.dbunit.dataset.DataSetException;
 import org.dbunit.dataset.ITable;
 import org.dbunit.dataset.ITableIterator;
 import org.dbunit.dataset.ITableMetaData;
-import org.dbunit.dataset.excel.XlsDataSet;
 
 import oracle.dbtools.raptor.utils.Connections;
 import oracle.ide.log.LogManager;
 import oracle.javatools.db.DBException;
 
-public class XlsProgressDataSet extends XlsDataSet implements Closeable {
+public class XlsProgressDataSet extends XlsStreamDataSet implements Closeable {
 
 	private ImportDialog owner = null;
 
@@ -57,12 +54,7 @@ public class XlsProgressDataSet extends XlsDataSet implements Closeable {
 		this.owner = owner;
 		this.logList = logList;
 		this.deleteBeforeImport = deleteBeforeImport;
-		Workbook workbook;
-		try {
-			workbook = WorkbookFactory.create(new FileInputStream(file));
-		} catch (InvalidFormatException e) {
-			throw new IOException(e);
-		}
+		Workbook workbook = super.getWorkbook();
 		int sheetCount = workbook.getNumberOfSheets();
 		for (int i = 0; i < sheetCount; i++) {
 			String tableName = workbook.getSheetName(i);
@@ -106,6 +98,7 @@ public class XlsProgressDataSet extends XlsDataSet implements Closeable {
 	private ITable itable = null;
 
 	private int tableIndex = 0;
+	private int logBeanSkip = 0;
 	private LogBean logBean = null;
 
 	private int calledIterator = 0;
@@ -126,6 +119,52 @@ public class XlsProgressDataSet extends XlsDataSet implements Closeable {
 			if (next) {
 				String tableName = iterator.getTable().getTableMetaData().getTableName();
 				if ("(LOG)".equals(tableName)) {
+
+					// 削除の場合は2回イテレータが呼ばれ、2回目で呼び出すための回避
+					if ((deleteBeforeImport && calledIterator > 1) || !deleteBeforeImport) {
+
+						XlsStreamTable logSheet = (XlsStreamTable) iterator.getTable();
+						if (logSheet.getRowCount() > 0) {
+							List<LogBean> loglistsOld = new ArrayList<LogBean>();
+							for (int row = 0; row < logSheet.getRowCount(); row++) {
+								LogBean logBeanR = new LogBean();
+								// time
+								Object date = logSheet.getValue(row, 0);
+								if (date instanceof Long) {
+									date = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
+											.format(new Date(((Long) date).longValue()));
+								}
+								logBeanR.setTime(date == null ? null : date.toString());
+								// table
+								Object table = logSheet.getValue(row, 1);
+								logBeanR.setTableName(table == null ? null : table.toString());
+								// sql
+								Object sql = logSheet.getValue(row, 2);
+								logBeanR.setSql(sql == null ? null : sql.toString());
+								// result
+								Object result = logSheet.getValue(row, 3);
+								logBeanR.setResult(result == null ? null : result.toString());
+								// else1
+								Object else1 = logSheet.getValue(row, 4);
+								logBeanR.setElse1(else1 == null ? null : else1.toString());
+								// else2
+								Object else2 = logSheet.getValue(row, 5);
+								logBeanR.setElse2(else2 == null ? null : else2.toString());
+								// else3
+								Object else3 = logSheet.getValue(row, 6);
+								logBeanR.setElse3(else3 == null ? null : else3.toString());
+								// else4
+								Object else4 = logSheet.getValue(row, 7);
+								logBeanR.setElse4(else4 == null ? null : else4.toString());
+								// else5
+								Object else5 = logSheet.getValue(row, 8);
+								logBeanR.setElse5(else5 == null ? null : else5.toString());
+								loglistsOld.add(logBeanR);
+							}
+							logBeanSkip = loglistsOld.size();
+							logList.addAll(0, loglistsOld);
+						}
+					}
 					next = next();
 				} else if (tableName != null && tableName.startsWith("(SQL")) {
 
@@ -152,9 +191,9 @@ public class XlsProgressDataSet extends XlsDataSet implements Closeable {
 								}
 							}
 						}
-						logBean = logList.get(tableIndex);
+						logBean = logList.get(logBeanSkip + tableIndex);
 						logBean.setSql("EXECUTE SQL...");
-						logBean.setTime(new Date());
+						logBean.setTime(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
 
 						tableIndex++;
 					}
@@ -174,8 +213,8 @@ public class XlsProgressDataSet extends XlsDataSet implements Closeable {
 			itable = iterator.getTable();
 			pm.setNote(itable.getTableMetaData().getTableName());
 			rowCount = itable.getRowCount();
-			logBean = logList.get(tableIndex++);
-			logBean.setTime(new Date());
+			logBean = logList.get(logBeanSkip + tableIndex++);
+			logBean.setTime(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date()));
 			return new ITableWrapper();
 		}
 	}

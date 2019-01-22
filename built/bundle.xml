@@ -18,7 +18,7 @@ limitations under the License.
 <update-bundle version="1.0" xmlns="http://xmlns.oracle.com/jdeveloper/updatebundle">
     <update id="sqldeveloper.extension.excelimportexport" xmlns="http://xmlns.oracle.com/jdeveloper/update">
         <name>Excel Import Export Tool</name>
-        <version>18.1.0.19.014.2149</version>
+        <version>18.1.0.19.023.0230</version>
         <author>takahide</author>
         <author-url>https://github.com/takahiden/excelimportexport</author-url>
         <description>Excel Import Export Tool extensions for SQL Developer</description>

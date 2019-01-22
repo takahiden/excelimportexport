@@ -24,8 +24,11 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -44,7 +47,10 @@ import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.apache.poi.ooxml.POIXMLProperties;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.DatabaseConnection;
@@ -199,8 +205,9 @@ public class ExportDialog extends JFrame implements ActionListener {
 					continue;
 				case JOptionPane.CANCEL_OPTION:
 					return null;
+				default:
+						return null;
 				}
-				break;
 			} else {
 				break;
 			}
@@ -235,31 +242,23 @@ public class ExportDialog extends JFrame implements ActionListener {
 			return;
 		}
 
-		// xlsx形式で出力できるようにする
-		XlsDataSetWriter writer = new XlsDataSetWriter() {
-			@Override
-			public Workbook createWorkbook() {
-				return new XSSFWorkbook();
-			}
-		};
-
 		// ＳＱＬのアクセステーブル名を取得し、シート名につかう
 		for (int i = 0; i < queryList.size(); i++) {
 			String query = queryList.get(i);
 			String tableName = getFromTableName(query);
 			if (tableName == null || tableName.length() <= 0 || tableList.contains(tableName)) {
-				tableList.add("SQL" + String.format("%03d", ++i));
+				tableList.add("SQL" + String.format("%03d", i));
 			} else {
 				tableList.add(tableName);
 			}
 		}
 		btnSave.setEnabled(false);
-		thread(connectionName, destFilePath, queryList, tableList, writer, this);
+		thread(connectionName, destFilePath, queryList, tableList, this);
 
 	}
 
 	protected void thread(String connectionName, String destFilePath, List<String> queryList, List<String> tableList,
-			XlsDataSetWriter writer, ExportDialog parent) {
+			ExportDialog parent) {
 		new SwingWorker<Object, Object>() {
 
 			@Override
@@ -283,7 +282,70 @@ public class ExportDialog extends JFrame implements ActionListener {
 						LogMessage("DEBUG", "query : " + query);
 					}
 
-					writer.write(partialDataSet, new FileOutputStream(destFilePath));
+					String documentBuilderFactory = System.getProperty(DOCUMENT_BUILDER_FACTORY_KEY);
+					String transformerFactory = System.getProperty(TRANSFORMER_FACTORY_KEY);
+					String xmlInputFactory = System.getProperty(XML_INPUT_FACTORY_KEY);
+					String xmlOutputFactory = System.getProperty(XML_OUTPUT_FACTORY_KEY);
+					String xmlEventFactory = System.getProperty(XML_EVENT_FACTORY_KEY);
+
+					try {
+						System.setProperty(DOCUMENT_BUILDER_FACTORY_KEY,
+								"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+						System.setProperty(TRANSFORMER_FACTORY_KEY,
+								"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
+						System.setProperty(XML_INPUT_FACTORY_KEY, "com.sun.xml.internal.stream.XMLInputFactoryImpl");
+						System.setProperty(XML_OUTPUT_FACTORY_KEY, "com.sun.xml.internal.stream.XMLOutputFactoryImpl");
+						System.setProperty(XML_EVENT_FACTORY_KEY,
+								"com.sun.xml.internal.stream.events.XMLEventFactoryImpl");
+
+						// xlsx形式で出力できるようにする
+						XlsDataSetWriter writer = new XlsDataSetWriter() {
+							@Override
+							public Workbook createWorkbook() {
+								File tempFile;
+								XSSFWorkbook original;
+								SXSSFWorkbook workbook;
+								try {
+									InputStream in = this.getClass().getResourceAsStream("template.xlsx");
+									tempFile = File.createTempFile("excelexport", ".temp");
+									Files.copy(in, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+									original = (XSSFWorkbook) WorkbookFactory.create(tempFile);
+									POIXMLProperties xmlProps = original.getProperties();
+									POIXMLProperties.CoreProperties coreProps = xmlProps.getCoreProperties();
+
+									String username = System.getProperty("user.name");
+									if (username == null) {
+										username = "author";
+									}
+									coreProps.setCreator(username);
+									workbook = new SXSSFWorkbook(original);
+									workbook.removeSheetAt(0);
+								} catch (IOException e) {
+									throw new RuntimeException(e);
+								}
+								return new AutoFixStyleWorkbook(original, workbook, tempFile);
+							};
+						};
+
+						writer.write(partialDataSet, new FileOutputStream(destFilePath));
+
+					} finally {
+						if (documentBuilderFactory != null) {
+							System.setProperty(DOCUMENT_BUILDER_FACTORY_KEY, documentBuilderFactory);
+						}
+						if (transformerFactory != null) {
+							System.setProperty(TRANSFORMER_FACTORY_KEY, transformerFactory);
+						}
+						if (xmlInputFactory != null) {
+							System.setProperty(XML_INPUT_FACTORY_KEY, xmlInputFactory);
+						}
+						if (xmlOutputFactory != null) {
+							System.setProperty(XML_OUTPUT_FACTORY_KEY, xmlOutputFactory);
+						}
+						if (xmlEventFactory != null) {
+							System.setProperty(XML_EVENT_FACTORY_KEY, xmlEventFactory);
+						}
+					}
 				} catch (Exception e) {
 					if (QueryDataSetEx.CANCEL_FLG.equals(e.getMessage())) {
 						LogMessage("INFO", " export cancel.");
@@ -315,8 +377,6 @@ public class ExportDialog extends JFrame implements ActionListener {
 					LogSheetUtil.outputLog(destFilePath, logList);
 				}
 
-				FixStyleUtil.fixStyle(destFilePath);
-
 				LogMessage("INFO", " successfully! [" + destFilePath + "]");
 				LogManager.getLogManager().getMsgPage().log("CALLED " + "\n");
 				JOptionPane.showInternalMessageDialog(getContentPane(), ExtensionResources.format("SUCCESS_EXPORT"),
@@ -330,6 +390,12 @@ public class ExportDialog extends JFrame implements ActionListener {
 			}
 		}.execute();
 	}
+
+	public static final String DOCUMENT_BUILDER_FACTORY_KEY = "javax.xml.parsers.DocumentBuilderFactory";
+	public static final String TRANSFORMER_FACTORY_KEY = "javax.xml.transform.TransformerFactory";
+	public static final String XML_INPUT_FACTORY_KEY = "javax.xml.stream.XMLInputFactory";
+	public static final String XML_OUTPUT_FACTORY_KEY = "javax.xml.stream.XMLOutputFactory";
+	public static final String XML_EVENT_FACTORY_KEY = "javax.xml.stream.XMLEventFactory";
 
 	public Connection getConnection(String connectionName) throws DBException {
 		return Connections.getInstance().getConnection(connectionName);

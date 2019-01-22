@@ -61,7 +61,7 @@ limitations under the License.
     </target>
 	
 	<patternset id="copy.targets"
-		includes="**/*.xls,**/*.sti, **/*.stg, **/*.sql,**/*.plsql, **/*bat, **/*.sh, **/*.ocp, **/*.jpg, **/*.gif,**/*.png,**/*.svg,**/*.properties,**/*.xml,**/*.fxml,**/*.js,**/*.css,**/*.html,**/*.TXT,**/*.BAT,**/*.chm,**/*.mde,**/*.dtd,**/*.jar,**/*.bteq,**/*.serial,**/*.prg,**/*.arbori,**/*.db,**/*.grammar,**/*.pkb,**/*.pks,**/*.json,**/*.pl"/>
+		includes="**/*.xlsx,**/*.xls,**/*.sti, **/*.stg, **/*.sql,**/*.plsql, **/*bat, **/*.sh, **/*.ocp, **/*.jpg, **/*.gif,**/*.png,**/*.svg,**/*.properties,**/*.xml,**/*.fxml,**/*.js,**/*.css,**/*.html,**/*.TXT,**/*.BAT,**/*.chm,**/*.mde,**/*.dtd,**/*.jar,**/*.bteq,**/*.serial,**/*.prg,**/*.arbori,**/*.db,**/*.grammar,**/*.pkb,**/*.pks,**/*.json,**/*.pl"/>
 
 	<target name="copy-inc" description="Copy files to the output directory">
         <!-- make temp class dir -->
