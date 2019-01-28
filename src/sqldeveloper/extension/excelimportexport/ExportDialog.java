@@ -206,7 +206,7 @@ public class ExportDialog extends JFrame implements ActionListener {
 				case JOptionPane.CANCEL_OPTION:
 					return null;
 				default:
-						return null;
+					return null;
 				}
 			} else {
 				break;
@@ -267,6 +267,7 @@ public class ExportDialog extends JFrame implements ActionListener {
 				IDatabaseConnection con;
 				QueryDataSetEx partialDataSet = null;
 				List<LogBean> logList = new ArrayList<LogBean>();
+				FileOutputStream fos = null;
 				try {
 					con = new DatabaseConnection(getConnection(connectionName));
 					DatabaseConfig config = con.getConfig();
@@ -326,8 +327,8 @@ public class ExportDialog extends JFrame implements ActionListener {
 								return new AutoFixStyleWorkbook(original, workbook, tempFile);
 							};
 						};
-
-						writer.write(partialDataSet, new FileOutputStream(destFilePath));
+						fos = new FileOutputStream(destFilePath);
+						writer.write(partialDataSet, fos);
 
 					} finally {
 						if (documentBuilderFactory != null) {
@@ -369,6 +370,9 @@ public class ExportDialog extends JFrame implements ActionListener {
 						} catch (IOException e) {
 							;
 						}
+					}
+					if (fos != null) {
+						fos.close();
 					}
 				}
 

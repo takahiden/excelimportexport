@@ -45,7 +45,7 @@ public class BinaryStreamDataTypeEx extends BinaryStreamDataType {
 		Object value = super.getSqlValue(name, resultSet);
 		byte[] valueBytes = (byte[]) value;
 		if (valueBytes == null) {
-			valueBytes = new byte[] {};
+			return null;
 		}
 		if (!blobDir.exists()) {
 			blobDir.mkdirs();
