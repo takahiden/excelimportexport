@@ -226,12 +226,14 @@ public class ImportDialog extends JFrame implements ActionListener {
 							new OracleDataTypeFactoryEx(inputFilePath));
 					config.setProperty("http://www.dbunit.org/properties/statementFactory",
 							new PreparedStatementFactoryEx());
+					config.setProperty(DatabaseConfig.FEATURE_ALLOW_EMPTY_FIELDS, true);
 					DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 					Date now = new Date();
 					ReplacementDataSet dataSet = new ReplacementDataSet(dataset);
 					dataSet.addReplacementSubstring("SYSDATE", df.format(now));
 					dataSet.addReplacementSubstring("SYSTIMESTAMP", df.format(now));
 					dataSet.addReplacementSubstring("null", "");
+					dataSet.addReplacementSubstring("NULL", "");
 					dataSet.addReplacementSubstring("(null)", "");
 					dataSet.addReplacementSubstring("(NULL)", "");
 					if (deleteBeforeImport) {
