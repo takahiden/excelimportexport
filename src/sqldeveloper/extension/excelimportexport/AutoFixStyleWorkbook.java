@@ -89,7 +89,11 @@ public class AutoFixStyleWorkbook implements Workbook {
 			Integer colsize = colMax.get(sheetName);
 			for (int i = 0; i <= colsize; i++) {
 				sheet.autoSizeColumn(i, true);
-				sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 256 * 3);
+				int width = sheet.getColumnWidth(i) + 256 * 3;
+				if (width > 255 * 256) {
+					width = 255 * 256;
+				}
+				sheet.setColumnWidth(i, width);
 			}
 			Integer rowsize = rowMax.get(sheetName) + 1;
 			String ref = CellReference.convertNumToColString(colsize) + rowsize;
