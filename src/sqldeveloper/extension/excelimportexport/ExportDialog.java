@@ -428,7 +428,7 @@ public class ExportDialog extends JFrame implements ActionListener {
 			String tableName;
 			try {
 				tableName = table.getTableName().toString();
-			} catch (StandardException e) {
+			} catch (Exception e) {
 				return null;
 			}
 			if (tableName != null) {
